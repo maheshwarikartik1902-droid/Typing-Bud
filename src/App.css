@@ -1,5 +1,4 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/inter";
 
@@ -48,6 +47,7 @@
     --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* Shadcn variables kept for UI components — these don't affect DaisyUI theming */
 :root {
     --background: oklch(1 0 0);
     --foreground: oklch(0.145 0 0);
@@ -82,6 +82,27 @@
     --sidebar-border: oklch(0.922 0 0);
     --sidebar-ring: oklch(0.708 0 0);
 }
+/* App.css — single rule that applies to ALL data-theme values */
+[data-theme] {
+    --background: var(--color-base-100);
+    --foreground: var(--color-base-content);
+    --card: var(--color-base-200);
+    --card-foreground: var(--color-base-content);
+    --popover: var(--color-base-200);
+    --popover-foreground: var(--color-base-content);
+    --primary: var(--color-primary);
+    --primary-foreground: var(--color-primary-content);
+    --secondary: var(--color-secondary);
+    --secondary-foreground: var(--color-secondary-content);
+    --muted: var(--color-base-200);
+    --muted-foreground: var(--color-base-content);
+    --accent: var(--color-accent);
+    --accent-foreground: var(--color-accent-content);
+    --destructive: var(--color-error);
+    --border: var(--color-base-300);
+    --input: var(--color-base-300);
+    --ring: var(--color-primary);
+}
 
 .dark {
     --background: oklch(0.145 0 0);
@@ -115,16 +136,4 @@
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.556 0 0);
-}
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-    }
-  body {
-    @apply bg-background text-foreground;
-    }
-  html {
-    @apply font-sans;
-    }
 }

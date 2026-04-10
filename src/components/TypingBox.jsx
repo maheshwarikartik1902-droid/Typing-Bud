@@ -1,84 +1,231 @@
-import React, { useEffect, useRef, useMemo, createRef } from 'react'
-import { generate, count } from "random-words";
-import { useState } from 'react';
+import React, { useEffect, useRef, useMemo, useState } from 'react'
+import { generate } from "random-words";
 import UpperMenu from './UpperMenu';
 import { useTestMode } from '../context/TestModeContext';
-import { div } from 'framer-motion/client';
+import { Button } from "@/components/ui/button"
+import Stats from './Stats';
+import Graph from './Graph';
 
+const QUOTES = {
+    short: ["The quick brown fox.", "To be or not to be.", "Stay hungry stay foolish."],
+    medium: ["The only way to do great work is to love what you do.", "In the middle of every difficulty lies opportunity."],
+    long: ["It does not matter how slowly you go as long as you do not stop. Perseverance is the key to success in any endeavor."],
+}
 
-const TypingBox = () => {
-    const { testTime, setTestTime } = useTestMode();
+const buildWordArray = (mode, wordCount, punctuation, numbers, quoteLength) => {
+    if (mode === 'quote') {
+        const pool = QUOTES[quoteLength];
+        const quote = pool[Math.floor(Math.random() * pool.length)];
+        return quote.split(' ');
+    }
+
+    let words = generate({ exactly: mode === 'words' ? wordCount : 50 });
+
+    if (punctuation) {
+        const puncts = [',', '.', '!', '?', ';', ':'];
+        words = words.map(w =>
+            Math.random() < 0.3
+                ? w + puncts[Math.floor(Math.random() * puncts.length)]
+                : w
+        );
+    }
+
+    if (numbers) {
+        words = words.map(w =>
+            Math.random() < 0.2
+                ? String(Math.floor(Math.random() * 100))
+                : w
+        );
+    }
+    return words;
+};
+
+const TypingBox = React.memo(() => {
+    const { testTime, setResetKey, wordCount, punctuation, numbers, mode, quoteLength } = useTestMode();
+
     const [countdown, setCountdown] = useState(testTime);
+    const [wordsTyped, setWordsTyped] = useState(0);  // ✅ track words typed
     const [currWordIndex, setCurrWordIndex] = useState(0);
     const [currCharIndex, setCurrCharIndex] = useState(0);
-    const [intervalId, setIntervalId] = useState(null);
+    const [testEnded, setTestEnded] = useState(false);
+    const [correctChar, setCorrectChar] = useState(0);
+    const [incorrectChar, setIncorrectChar] = useState(0);
+    const [missedChar, setMissedChar] = useState(0);
+    const [extraChar, setExtraChar] = useState(0);
+    const [correctWords, setCorrectWords] = useState(0);
+    const [graphHistory, setGraphHistory] = useState([]);
+    const [wordArray, setWordArray] = useState(() => buildWordArray(mode, wordCount, punctuation, numbers, quoteLength));
 
-    //creating words
-    const [wordArray, setWordArray] = useState(() => {
-        return generate({ min: 15, max: 30 });
-    });
-
-    //handling user inoput;
+    const intervalRef = useRef(null);
+    const correctCharRef = useRef(0);
+    const incorrectCharRef = useRef(0);
+    const missedCharRef = useRef(0);
+    const extraCharRef = useRef(0);
+    const elapsedRef = useRef(0);
     const inputRef = useRef(null);
 
+    const focusInput = () => inputRef.current.focus();
+
+
+
+
+
+    const wordsSpanRef = useMemo(() => {
+        return Array(wordArray.length).fill(0).map(() => React.createRef());
+    }, [wordArray]);
+
+    const startTimer = () => {
+        if (intervalRef.current || mode !== 'time') return;
+        intervalRef.current = setInterval(() => {
+            elapsedRef.current += 1;
+            const wpm = Math.round(
+                (correctCharRef.current / 5) / (elapsedRef.current / 60)
+            );
+            setGraphHistory(prev => [...prev, {
+                second: elapsedRef.current,
+                wpm,
+                errors: incorrectCharRef.current + missedCharRef.current + extraCharRef.current
+            }]);
+            setCountdown(prev => {
+                if (prev <= 1) {
+                    clearInterval(intervalRef.current);
+                    intervalRef.current = null;
+                    setTestEnded(true);
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+    };
+
     const handleUserInput = (e) => {
-        const allCurrChars = wordsSpanRef[currWordIndex].current.childNodes;
+        if (testEnded) return;
+        if (e.ctrlKey || e.altKey || e.metaKey) return;
+        const allowed = e.key.length === 1 || e.key === 'Backspace' || e.key === ' ';
+        if (!allowed) return;
 
-        // ── Space key ────────────────────────────────────────────────────────────
-        if (e.key === ' ') {
-            if (currCharIndex >= allCurrChars.length) {
-                //  guard against pressing space on the last word
-                if (currWordIndex + 1 >= wordsSpanRef.length) return;
+        if (!intervalRef.current && mode !== 'time') {
+            const isNoOp =
+                (e.key === 'Backspace' && currCharIndex === 0 && currWordIndex === 0) ||
+                (e.key === ' ' && currCharIndex === 0);
 
-                // Advance to next word
-                allCurrChars[allCurrChars.length - 1].classList.remove('current-right');
-                wordsSpanRef[currWordIndex + 1].current.childNodes[0].className = 'current';
-                setCurrWordIndex(currWordIndex + 1);
-                setCurrCharIndex(0);
-                return;
+            if (!isNoOp) {
+                intervalRef.current = setInterval(() => {
+                    elapsedRef.current += 1;
+                    const wpm = Math.round(
+                        (correctCharRef.current / 5) / (elapsedRef.current / 60)
+                    );
+                    setGraphHistory(prev => [...prev, {
+                        second: elapsedRef.current,
+                        wpm,
+                        errors: incorrectCharRef.current + missedCharRef.current + extraCharRef.current
+                    }]);
+                }, 1000);
             }
-            //mid-word space falls through to typing logic below
-            // (space will be marked incorrect since no word contains a space char)
         }
 
-        // ── Backspace key ────────────────────────────────────────────────────────
+        // start timer only for time mode
+        if (mode === 'time') {
+            const isNoOp =
+                (e.key === 'Backspace' && currCharIndex === 0 && currWordIndex === 0) ||
+                (e.key === ' ' && currCharIndex === 0);
+            if (!intervalRef.current && !isNoOp) startTimer();
+        }
+
+        const allCurrChars = wordsSpanRef[currWordIndex].current.childNodes;
+
+        if (e.key === ' ') {
+            let correctCharsInWord = wordsSpanRef[currWordIndex].current.querySelectorAll('.correct').length;
+            if (correctCharsInWord === allCurrChars.length) {
+                setCorrectWords(prev => prev + 1);
+            }
+
+            // ✅ mark missed chars
+            for (let i = currCharIndex; i < allCurrChars.length; i++) {
+                if (!allCurrChars[i].classList.contains('incorrect')) {
+                    allCurrChars[i].classList.add('incorrect');
+                    setMissedChar(prev => prev + 1);
+                    missedCharRef.current += 1;
+                }
+            }
+
+            const newWordsTyped = currWordIndex + 1;
+            setWordsTyped(newWordsTyped);
+
+            // ✅ end test in words/quote mode when all words are done
+            if (mode === 'words' || mode === 'quote') {
+                if (currWordIndex + 1 >= wordArray.length) {
+                    clearInterval(intervalRef.current); 
+                    intervalRef.current = null;
+                    setTestEnded(true);
+                    return;
+                }
+            }
+
+            if (currWordIndex + 1 >= wordsSpanRef.length) {
+                allCurrChars[Math.min(currCharIndex, allCurrChars.length - 1)].classList.remove('current', 'current-right');
+                return;
+            }
+
+            allCurrChars[Math.min(currCharIndex, allCurrChars.length - 1)].classList.remove('current', 'current-right');
+            wordsSpanRef[currWordIndex + 1].current.childNodes[0].className = 'current';
+            setCurrWordIndex(prev => prev + 1);
+            setCurrCharIndex(0);
+            return;
+        }
+
         if (e.key === 'Backspace') {
             if (currCharIndex === 0) {
                 if (currWordIndex === 0) return;
-
-                // Move cursor back to end of previous word
                 allCurrChars[0].classList.remove('current');
                 const prevChars = wordsSpanRef[currWordIndex - 1].current.childNodes;
                 prevChars[prevChars.length - 1].classList.add('current-right');
                 setCurrWordIndex(currWordIndex - 1);
-                // Bug 3 fix: use .length (not .length-1) so the current-right 
-                // state check (currCharIndex >= allCurrChars.length) works correctly
                 setCurrCharIndex(prevChars.length);
                 return;
             }
-
+            if (currCharIndex === allCurrChars.length &&
+                allCurrChars[currCharIndex - 1].classList.contains('extra')) {
+                allCurrChars[currCharIndex - 1].remove();
+                allCurrChars[currCharIndex - 2].classList.add('current-right');
+                setCurrCharIndex(currCharIndex - 1);
+                return;
+            }
             if (currCharIndex >= allCurrChars.length) {
-                // Cursor is after last char — erase it and move cursor back
-                allCurrChars[allCurrChars.length - 1].classList.remove('current-right');
-                allCurrChars[allCurrChars.length - 1].className = 'current';
+                allCurrChars[allCurrChars.length - 1].classList.remove('current-right', 'incorrect', 'correct');
+                allCurrChars[allCurrChars.length - 1].classList.add('current');
                 setCurrCharIndex(allCurrChars.length - 1);
                 return;
             }
-
-            // Normal mid-word backspace
             allCurrChars[currCharIndex].classList.remove('current');
             allCurrChars[currCharIndex - 1].className = 'current';
             setCurrCharIndex(currCharIndex - 1);
             return;
         }
+        if (currCharIndex === allCurrChars.length) {
+            const newSpan = document.createElement("span");
+            newSpan.innerText = e.key;
+            newSpan.className = 'incorrect extra current-right';
+            allCurrChars[currCharIndex - 1].classList.remove('current-right');
+            wordsSpanRef[currWordIndex].current.appendChild(newSpan);
+            setCurrCharIndex(currCharIndex + 1);
+            setExtraChar(prev => prev + 1);
+            extraCharRef.current += 1;
+            return;
+        }
 
-        // ── Typing (all keys including mid-word space) ───────────────────────────
-        //gnore input if cursor is past the end of the word
         if (currCharIndex >= allCurrChars.length) return;
 
-        // Bug 5 fix: removed leading space from className strings
-        allCurrChars[currCharIndex].className =
-            e.key === allCurrChars[currCharIndex].innerText ? 'correct' : 'incorrect';
+        if (e.key === allCurrChars[currCharIndex].innerText) {
+            allCurrChars[currCharIndex].className = 'correct';
+            correctCharRef.current += 1;
+            setCorrectChar(prev => prev + 1);
+        }
+        else {
+            allCurrChars[currCharIndex].className = 'incorrect';
+            setIncorrectChar(prev => prev + 1);
+            incorrectCharRef.current += 1;
+        }
 
         if (currCharIndex === allCurrChars.length - 1) {
             allCurrChars[currCharIndex].className += ' current-right';
@@ -89,61 +236,105 @@ const TypingBox = () => {
         setCurrCharIndex(currCharIndex + 1);
     };
 
-
-    const focusInput = () => {
-        inputRef.current.focus();
-    }
-
-    //creating reference for each word span
-    const wordsSpanRef = useMemo(() => {
-        return Array(wordArray.length).fill(0).map(() => React.createRef());
-    }, [wordArray])
-
     useEffect(() => {
         focusInput();
-        wordsSpanRef[0].current.childNodes[0].classList = "current";
-    }, [])
+        if (wordsSpanRef[0]?.current?.childNodes[0]) {
+            wordsSpanRef[0].current.childNodes[0].classList.add('current');
+        }
+    }, [wordArray]);
 
+    const calculateWPM = () => {
+        //  use elapsedRef for time mode, elapsed tracking for others
+        const elapsed = mode === 'time'
+            ? testTime - countdown
+            : elapsedRef.current;
+        if (elapsed === 0) return 0;
+        return Math.round((correctChar / 5) / (elapsed / 60));
+    };
 
-    useEffect(() => {
-        resetTest();
-    }, [testTime]);
+    const calculateAccuracy = () => {
+        const total = correctChar + incorrectChar + missedChar + extraChar;
+        if (total === 0) return 0;
+        return Math.max(
+            0,
+            Math.min(100, Math.round((correctChar / total) * 100))
+        );
+    };
 
-    //reseting a test
     const resetTest = () => {
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+        }
         setCountdown(testTime);
-        setWordArray(generate({ exactly: 30 }));
-    }
+        setWordsTyped(0);
+        setWordArray(buildWordArray(mode, wordCount, punctuation, numbers, quoteLength));
+        setCurrWordIndex(0);
+        setCurrCharIndex(0);
+        setTestEnded(false);
+        correctCharRef.current = 0;
+        incorrectCharRef.current = 0;
+        missedCharRef.current = 0;
+        extraCharRef.current = 0;
+        elapsedRef.current = 0;
+        setCorrectChar(0);
+        setIncorrectChar(0);
+        setMissedChar(0);
+        setExtraChar(0);
+        setCorrectWords(0);
+        setGraphHistory([]);
+    };
 
     return (
         <div>
-            <div className='type-box' onClick={focusInput}>
-                <UpperMenu countdown={countdown} />
-                <div className='words'>
-                    {
-                        wordArray.map((word, wordIndex) => (
-                            <span className="word" key={wordIndex} ref={wordsSpanRef[wordIndex]}>
-                                {
-                                    word.split("").map((char, charIndex) => (
-                                        <span key={charIndex}>{char}</span>
-                                    ))
-                                }
-                            </span>
-                        ))
-                    }
+            <UpperMenu
+                countdown={countdown}
+                wordsTyped={wordsTyped}
+                totalWords={wordArray.length}
+                onReset={resetTest}
+            />
+            {testEnded ? (
+                <div className="result-container">
+                    <div className="left-panel">
+                        <Stats
+                            wpm={calculateWPM()}
+                            accuracy={calculateAccuracy()}
+                            correctChar={correctChar}
+                            incorrectChar={incorrectChar}
+                            missedChar={missedChar}
+                            extraChar={extraChar}
+                        />
+                    </div>
+
+                    <div className="right-panel">
+                        <Graph graphHistory={graphHistory} />
+                    </div>
                 </div>
-            </div>
+            ) : (
+                <div className='type-box' onClick={focusInput}>
+                    <div className='words'>
+                        {wordArray.map((word, wordIndex) => (
+                            <span className="word" key={wordIndex} ref={wordsSpanRef[wordIndex]}>
+                                {word.split("").map((char, charIndex) => (
+                                    <span key={charIndex}>{char}</span>
+                                ))}
+                            </span>
+                        ))}
+                    </div>
+                </div>
+
+            )}
+            <Button className="hover:bg-primary hover:text-(--color-primary-content) mt-2" variant="outline" onClick={() => setResetKey(prev => prev + 1)}>
+                Retry
+            </Button>
             <input
                 type="text"
-                name='text'
                 ref={inputRef}
                 className='hidden-input'
                 onKeyDown={handleUserInput}
-
             />
         </div>
+    );
+});
 
-    )
-}
-
-export default TypingBox
+export default TypingBox;
