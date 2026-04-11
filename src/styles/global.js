@@ -25,7 +25,7 @@ export const GlobalStyles = createGlobalStyle`
   }
 
   html, body, #root {
-    min-height: 100%;
+    height: 100%;
   }
 
   body {
@@ -44,7 +44,7 @@ export const GlobalStyles = createGlobalStyle`
   }
 
   .canvas {
-    min-height: 100vh;
+    height: 100vh;
     width: 100%;
     display: grid;
     grid-template-rows: auto 1fr auto;
@@ -55,6 +55,7 @@ export const GlobalStyles = createGlobalStyle`
     padding: 1rem;
     background-color: inherit;
     color: inherit;
+    position: relative;
   }
 
   .header,
@@ -70,6 +71,15 @@ export const GlobalStyles = createGlobalStyle`
     margin: 0 auto;
     padding: 0 1rem;
   }
+
+  .retry-btn {
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+  }
+  
 
   .words {
     font-size: 24px;
@@ -233,6 +243,10 @@ export const GlobalStyles = createGlobalStyle`
   }
 }
 
+.footer-area {
+    width: 100%;
+    align-self: end;  /* ✅ sticks to bottom of grid row naturally */
+} 
 
   /*
      the second one (hardcoded white) silently overrode the first */

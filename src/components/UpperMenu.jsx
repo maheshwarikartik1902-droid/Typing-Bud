@@ -5,7 +5,7 @@ const TIMES       = [15, 30, 60]
 const WORD_COUNTS = [10, 25, 50]
 const QUOTE_SIZES = ['short', 'medium', 'long']
 
-const UpperMenu = ({ countdown, wordsTyped, totalWords, onReset }) => {
+const UpperMenu = ({ countdown, wordsTyped, totalWords, onReset, isLoading }) => {
     const {
         mode,
         testTime, setTestTime,
@@ -27,7 +27,7 @@ const UpperMenu = ({ countdown, wordsTyped, totalWords, onReset }) => {
             <div className="counter">
                 {mode === 'time'  && <p>{countdown}s</p>}
                 {mode === 'words' && <p>{wordsTyped} / {totalWords}</p>}
-                {mode === 'quote' && <p>{wordsTyped} / {totalWords}</p>}
+                {mode === 'quote' && <p>{wordsTyped} / {isLoading ? '-' : totalWords}</p>}
             </div>
 
             <div className="modes">

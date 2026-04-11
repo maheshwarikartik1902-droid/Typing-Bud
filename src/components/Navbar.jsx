@@ -11,8 +11,8 @@ const MODES = [
 ]
 
 const Navbar = () => {
-const { theme, setTheme } = useTheme();
-    const { mode, setMode, setResetKey } = useTestMode();
+    const { theme, setTheme } = useTheme();
+    const { mode, setMode, setResetKey, sound, setSound, volume, setVolume } = useTestMode();
 
     const handleMode = (m) => {
         setMode(m);
@@ -77,8 +77,42 @@ const { theme, setTheme } = useTheme();
 
                     {/* Sound section placeholder */}
                     <div className="mb-6">
-                        <h4 className="text-sm font-semibold opacity-60 uppercase tracking-widest mb-3">Sound</h4>
-                        <p className="text-sm opacity-40">Coming soon</p>
+                        <h4 className="text-sm font-semibold opacity-60 uppercase tracking-widest mb-3">
+                            Sound
+                        </h4>
+
+                        <div className="flex flex-col gap-4">
+
+                            {/* toggle */}
+                            <div className="flex items-center justify-between">
+                                <span className="text-sm">Keypress sound</span>
+                                <input
+                                    type="checkbox"
+                                    className="toggle toggle-primary border border-base-content/30 rounded-xl bg-base-300 w-12 h-6"
+                                    checked={sound}
+                                    onChange={() => setSound(prev => !prev)}
+                                />
+                            </div>
+                            
+                            {/* volume slider — only show when enabled */}
+                            {sound && (
+                                <div className="flex items-center gap-3">
+                                    <span className="text-sm opacity-60">Volume</span>
+                                    <input
+                                        type="range"
+                                        min="0"
+                                        max="1"
+                                        step="0.1"
+                                        value={volume}
+                                        onChange={(e) => setVolume(parseFloat(e.target.value))}
+                                        className="range range-primary range-sm flex-1"
+                                    />
+                                    <span className="text-sm opacity-60 w-8">
+                                        {Math.round(volume * 100)}%
+                                    </span>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     {/* Display section placeholder */}

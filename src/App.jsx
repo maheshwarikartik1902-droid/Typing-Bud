@@ -5,22 +5,30 @@ import ThemeSwitcher from './components/ThemeSwitcher';
 import ThemeProvider from './provider/ThemeProvider';
 import { useTestMode } from './context/TestModeContext';
 import Navbar from './components/Navbar';
-// ✅ FIX: removed unused Children import, unused UpperMenu import, unused count state
+import Footer from './components/Footer';
+import { Button } from "@/components/ui/button"
 
 function App() {
-    const { testTime, resetKey } = useTestMode();
-    
+    const { testTime, resetKey, setResetKey } = useTestMode();
+
     return (
         <ThemeProvider>
             <GlobalStyles />
             {/* bg-base-100 and text-base-content are DaisyUI utility classes
                 that respond to data-theme changes automatically */}
             <div className='canvas bg-base-100 text-base-content'>
-                <Navbar />
+                <header className="header">
+                    <Navbar />
+                </header>
+
                 <TypingBox key={`${testTime}-${resetKey}`} />
-                <div className='footer flex flex-row items-center gap-2'>
-                    <p>footer</p>
-                </div>
+
+                <Button className="mx-auto block px-6 py-2 hover:bg-primary hover:text-(--color-primary-content) mb-32" variant="outline" onClick={() => setResetKey(prev => prev + 1)}>
+                    Retry
+                </Button>
+                <footer className="footer-area">
+                    <Footer />
+                </footer>
             </div>
         </ThemeProvider>
     );

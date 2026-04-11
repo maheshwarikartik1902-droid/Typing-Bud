@@ -5,6 +5,7 @@ import { useTestMode } from '../context/TestModeContext';
 import { Button } from "@/components/ui/button"
 import Stats from './Stats';
 import Graph from './Graph';
+import { useSounds } from '@/hooks/useSounds';
 
 const QUOTES = {
     short: ["The quick brown fox.", "To be or not to be.", "Stay hungry stay foolish."],
@@ -12,11 +13,37 @@ const QUOTES = {
     long: ["It does not matter how slowly you go as long as you do not stop. Perseverance is the key to success in any endeavor."],
 }
 
+
+const ApiHandler = async (quoteLength) => {
+
+
+
+    const lengthMap = {
+        short: { minLength: 0, maxLength: 50 },
+        medium: { minLength: 50, maxLength: 200 },
+        long: { minLength: 200, maxLength: 500 },
+    };
+
+    const { minLength, maxLength } = lengthMap[quoteLength];
+
+    const response = await fetch(`https://motivational-spark-api.vercel.app/api/quotes`);
+    const data = await response.json();
+
+    const matching = data.filter(q =>
+        q.quote.length >= minLength && q.quote.length <= maxLength
+    );
+
+    if (matching.length === 0) return QUOTES[quoteLength][0].split(' ');
+
+    const quote = matching[Math.floor(Math.random() * matching.length)];
+
+    return quote.quote.split(' ');
+}
+
+
 const buildWordArray = (mode, wordCount, punctuation, numbers, quoteLength) => {
     if (mode === 'quote') {
-        const pool = QUOTES[quoteLength];
-        const quote = pool[Math.floor(Math.random() * pool.length)];
-        return quote.split(' ');
+        return [];
     }
 
     let words = generate({ exactly: mode === 'words' ? wordCount : 50 });
@@ -41,8 +68,8 @@ const buildWordArray = (mode, wordCount, punctuation, numbers, quoteLength) => {
 };
 
 const TypingBox = React.memo(() => {
-    const { testTime, setResetKey, wordCount, punctuation, numbers, mode, quoteLength } = useTestMode();
-
+    const { testTime, setResetKey, wordCount, punctuation, numbers, mode, quoteLength, sound, setSound } = useTestMode();
+    const {playKey, spaceKey} = useSounds();
     const [countdown, setCountdown] = useState(testTime);
     const [wordsTyped, setWordsTyped] = useState(0);  // ✅ track words typed
     const [currWordIndex, setCurrWordIndex] = useState(0);
@@ -55,7 +82,7 @@ const TypingBox = React.memo(() => {
     const [correctWords, setCorrectWords] = useState(0);
     const [graphHistory, setGraphHistory] = useState([]);
     const [wordArray, setWordArray] = useState(() => buildWordArray(mode, wordCount, punctuation, numbers, quoteLength));
-
+    const [isLoading, setIsLoading] = useState(false);
     const intervalRef = useRef(null);
     const correctCharRef = useRef(0);
     const incorrectCharRef = useRef(0);
@@ -65,10 +92,6 @@ const TypingBox = React.memo(() => {
     const inputRef = useRef(null);
 
     const focusInput = () => inputRef.current.focus();
-
-
-
-
 
     const wordsSpanRef = useMemo(() => {
         return Array(wordArray.length).fill(0).map(() => React.createRef());
@@ -98,6 +121,26 @@ const TypingBox = React.memo(() => {
         }, 1000);
     };
 
+
+    //loading quotes 
+    const loadQuote = async () => {
+        setIsLoading(true);
+        try {
+            const words = await ApiHandler(quoteLength);
+            setWordArray(words);
+        } catch (err) {
+            const fallback = QUOTES[quoteLength];
+            const quote = fallback[Math.floor(Math.random() * fallback.length)];
+            setWordArray(quote.split(' '));
+        } finally {
+            setTimeout(() => {
+                setIsLoading(false);
+            }, 500)
+
+        }
+    }
+
+
     const handleUserInput = (e) => {
         if (testEnded) return;
         if (e.ctrlKey || e.altKey || e.metaKey) return;
@@ -123,7 +166,7 @@ const TypingBox = React.memo(() => {
                 }, 1000);
             }
         }
-
+        
         // start timer only for time mode
         if (mode === 'time') {
             const isNoOp =
@@ -135,6 +178,7 @@ const TypingBox = React.memo(() => {
         const allCurrChars = wordsSpanRef[currWordIndex].current.childNodes;
 
         if (e.key === ' ') {
+            spaceKey();
             let correctCharsInWord = wordsSpanRef[currWordIndex].current.querySelectorAll('.correct').length;
             if (correctCharsInWord === allCurrChars.length) {
                 setCorrectWords(prev => prev + 1);
@@ -155,7 +199,7 @@ const TypingBox = React.memo(() => {
             // ✅ end test in words/quote mode when all words are done
             if (mode === 'words' || mode === 'quote') {
                 if (currWordIndex + 1 >= wordArray.length) {
-                    clearInterval(intervalRef.current); 
+                    clearInterval(intervalRef.current);
                     intervalRef.current = null;
                     setTestEnded(true);
                     return;
@@ -173,8 +217,9 @@ const TypingBox = React.memo(() => {
             setCurrCharIndex(0);
             return;
         }
-
+        playKey();
         if (e.key === 'Backspace') {
+            
             if (currCharIndex === 0) {
                 if (currWordIndex === 0) return;
                 allCurrChars[0].classList.remove('current');
@@ -243,6 +288,15 @@ const TypingBox = React.memo(() => {
         }
     }, [wordArray]);
 
+    useEffect(() => {
+        if (mode == 'quote') {
+            loadQuote();
+        }
+        else {
+            setWordArray(buildWordArray(mode, wordCount, punctuation, numbers));
+        }
+    }, [mode, quoteLength, wordCount, punctuation, numbers]);
+
     const calculateWPM = () => {
         //  use elapsedRef for time mode, elapsed tracking for others
         const elapsed = mode === 'time'
@@ -268,7 +322,6 @@ const TypingBox = React.memo(() => {
         }
         setCountdown(testTime);
         setWordsTyped(0);
-        setWordArray(buildWordArray(mode, wordCount, punctuation, numbers, quoteLength));
         setCurrWordIndex(0);
         setCurrCharIndex(0);
         setTestEnded(false);
@@ -283,6 +336,12 @@ const TypingBox = React.memo(() => {
         setExtraChar(0);
         setCorrectWords(0);
         setGraphHistory([]);
+        if (mode === 'quote') {
+            loadQuote();
+        }
+        else {
+            setWordArray(buildWordArray(mode, wordCount, punctuation, numbers));
+        }
     };
 
     return (
@@ -292,46 +351,64 @@ const TypingBox = React.memo(() => {
                 wordsTyped={wordsTyped}
                 totalWords={wordArray.length}
                 onReset={resetTest}
+                isLoading={isLoading}
             />
-            {testEnded ? (
-                <div className="result-container">
-                    <div className="left-panel">
-                        <Stats
-                            wpm={calculateWPM()}
-                            accuracy={calculateAccuracy()}
-                            correctChar={correctChar}
-                            incorrectChar={incorrectChar}
-                            missedChar={missedChar}
-                            extraChar={extraChar}
-                        />
-                    </div>
-
-                    <div className="right-panel">
-                        <Graph graphHistory={graphHistory} />
+            {isLoading ? (
+                <div className="type-box">
+                    <div className="flex items-center justify-center h-32 opacity-50">
+                        <span className="loading loading-dots loading-md" />
                     </div>
                 </div>
-            ) : (
-                <div className='type-box' onClick={focusInput}>
-                    <div className='words'>
-                        {wordArray.map((word, wordIndex) => (
-                            <span className="word" key={wordIndex} ref={wordsSpanRef[wordIndex]}>
-                                {word.split("").map((char, charIndex) => (
-                                    <span key={charIndex}>{char}</span>
-                                ))}
-                            </span>
-                        ))}
-                    </div>
-                </div>
+            ) :
 
-            )}
-            <Button className="hover:bg-primary hover:text-(--color-primary-content) mt-2" variant="outline" onClick={() => setResetKey(prev => prev + 1)}>
-                Retry
-            </Button>
+                testEnded ? (
+                    <div className="result-container">
+                        <div className="left-panel">
+                            <Stats
+                                wpm={calculateWPM()}
+                                accuracy={calculateAccuracy()}
+                                correctChar={correctChar}
+                                incorrectChar={incorrectChar}
+                                missedChar={missedChar}
+                                extraChar={extraChar}
+                            />
+                        </div>
+
+                        <div className="right-panel">
+                            <Graph graphHistory={graphHistory} />
+                        </div>
+                    </div>
+                ) : (
+                    <div className='type-box' onClick={focusInput}>
+                        <div className='words'>
+                            {wordArray.map((word, wordIndex) => (
+                                <span className="word" key={wordIndex} ref={wordsSpanRef[wordIndex]}>
+                                    {word.split("").map((char, charIndex) => (
+                                        <span key={charIndex}>{char}</span>
+                                    ))}
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+
+                )}
+            
             <input
                 type="text"
                 ref={inputRef}
                 className='hidden-input'
-                onKeyDown={handleUserInput}
+                onKeyDown={(e) => {
+                    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+                        e.preventDefault();
+                    }
+                    // Tab restarts test
+                    if (e.key === 'Tab') {
+                        e.preventDefault();
+                        setResetKey(prev => prev + 1);
+                        return;
+                    }
+                    handleUserInput(e);
+                }}
             />
         </div>
     );

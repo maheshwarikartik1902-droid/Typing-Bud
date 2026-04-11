@@ -1,3 +1,4 @@
+import { UsersRound } from "lucide-react";
 import { createContext, useContext, useState } from "react";
 
 const TestModeContext = createContext();
@@ -10,6 +11,8 @@ export const TestModeContextProvider = ({ children }) => {
     const [punctuation, setPunctuation] = useState(false);
     const [numbers, setNumbers] = useState(false);
     const [resetKey, setResetKey] = useState(0);
+    const [sound, setSound] = useState(true);
+    const [volume, setVolume] = useState(0.5);
 
     const values = {
         mode, setMode,
@@ -19,6 +22,8 @@ export const TestModeContextProvider = ({ children }) => {
         punctuation, setPunctuation,
         numbers, setNumbers,
         resetKey, setResetKey,
+        sound, setSound, 
+        volume, setVolume,
     };
 
     return (
