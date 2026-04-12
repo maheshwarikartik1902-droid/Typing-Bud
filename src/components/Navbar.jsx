@@ -12,7 +12,7 @@ const MODES = [
 
 const Navbar = () => {
     const { theme, setTheme } = useTheme();
-    const { mode, setMode, setResetKey, sound, setSound, volume, setVolume } = useTestMode();
+    const { mode, setMode, setResetKey, sound, setSound, volume, setVolume, soundType,setSoundType } = useTestMode();
 
     const handleMode = (m) => {
         setMode(m);
@@ -23,12 +23,12 @@ const Navbar = () => {
         <div className="navbar bg-base-200 shadow-sm px-4 gap-4">
 
             {/* Logo */}
-            <div className="flex-1 right-0">
-                <span className="text-xl font-bold text-primary">Typing Bud</span>
+            <div className="navbar-start ml-10">
+                <span className="text-xl font-bold text-primary" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>Typing Bud</span>
             </div>
 
             {/* Mode selector */}
-            <div className="flex items-center gap-1">
+            <div className="navbar-end gap-1">
                 {MODES.map(({ id, label, icon: Icon }) => (
                     <button
                         key={id}
@@ -83,17 +83,32 @@ const Navbar = () => {
 
                         <div className="flex flex-col gap-4">
 
-                            {/* toggle */}
+                            {/* Sound type selector */}
                             <div className="flex items-center justify-between">
-                                <span className="text-sm">Keypress sound</span>
-                                <input
-                                    type="checkbox"
-                                    className="toggle toggle-primary border border-base-content/30 rounded-xl bg-base-300 w-12 h-6"
-                                    checked={sound}
-                                    onChange={() => setSound(prev => !prev)}
-                                />
+                                <span className="text-sm">Sound type</span>
+                                <div className="flex gap-1">
+                                    <button
+                                        onClick={() => { setSound(true); setSoundType('key'); }}
+                                        className={`btn btn-sm ${sound && soundType === 'key' ? 'btn-primary' : 'btn-ghost'}`}
+                                    >
+                                        Key
+                                    </button>
+                                    <button
+                                        onClick={() => { setSound(true); setSoundType('typeWriter'); }}
+                                        className={`btn btn-sm ${sound && soundType === 'typeWriter' ? 'btn-primary' : 'btn-ghost'}`}
+                                    >
+                                        Typewriter
+                                    </button>
+                                    <button
+                                        onClick={() => setSound(false)}
+                                        className={`btn btn-sm ${!sound ? 'btn-primary' : 'btn-ghost'}`}
+                                    >
+                                        🔇 Off
+                                    </button>
+                                </div>
                             </div>
-                            
+
+
                             {/* volume slider — only show when enabled */}
                             {sound && (
                                 <div className="flex items-center gap-3">

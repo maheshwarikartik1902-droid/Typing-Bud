@@ -11,7 +11,8 @@ export const TestModeContextProvider = ({ children }) => {
     const [punctuation, setPunctuation] = useState(false);
     const [numbers, setNumbers] = useState(false);
     const [resetKey, setResetKey] = useState(0);
-    const [sound, setSound] = useState(true);
+    const [sound, setSound] = useState(false);
+    const [soundType, setSoundType] = useState('key')
     const [volume, setVolume] = useState(0.5);
 
     const values = {
@@ -24,6 +25,7 @@ export const TestModeContextProvider = ({ children }) => {
         resetKey, setResetKey,
         sound, setSound, 
         volume, setVolume,
+        soundType, setSoundType,
     };
 
     return (
