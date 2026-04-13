@@ -37,7 +37,7 @@ export default function LandingPage({ onStart }) {
                             Typing Bud
                         </span>
                         <div className="flex items-center gap-4">
-                            {/*<button className="bg-transparent border-0 cursor-pointer text-xs font-bold uppercase tracking-widest px-4 py-2 rounded opacity-65 hover:opacity-100 transition-opacity"
+                            <button className="bg-transparent border-0 cursor-pointer text-xs font-bold uppercase tracking-widest px-4 py-2 rounded opacity-65 hover:opacity-100 transition-opacity"
                                 style={{ fontFamily: 'Space Grotesk, sans-serif', color: '#dee3ea' }}>
                                 Login
                             </button>
@@ -45,7 +45,7 @@ export default function LandingPage({ onStart }) {
                                 className="lp-thermal border-0 cursor-pointer text-xs font-bold uppercase tracking-widest px-5 py-2 rounded-md hover:scale-95 transition-transform"
                                 style={{ fontFamily: 'Space Grotesk, sans-serif', color: '#3a0a00' }}>
                                 Sign Up
-                            </button>*/}
+                            </button>
                         </div>
                     </div>
                 </nav>
@@ -72,14 +72,15 @@ export default function LandingPage({ onStart }) {
 
                         {/* CTAs */}
                         <div className="flex flex-wrap gap-4 justify-center mb-20">
-                            <button onClick={()=> navigate("/practice")}
+                            <button onClick={() => navigate("/practice")}
                                 className="lp-thermal border-0 cursor-pointer text-sm font-bold uppercase tracking-widest px-10 py-4 rounded-lg hover:scale-95 transition-transform"
                                 style={{ fontFamily: 'Space Grotesk, sans-serif', color: '#3a0a00' }}>
                                 Start Typing Now
                             </button>
-                            <button className="border-0 cursor-pointer text-sm font-bold uppercase tracking-widest px-10 py-4 rounded-lg transition-colors hover:brightness-110"
+                            <button onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+                            className="border-0 cursor-pointer text-sm font-bold uppercase tracking-widest px-10 py-4 rounded-lg transition-colors hover:brightness-110"
                                 style={{ fontFamily: 'Space Grotesk, sans-serif', backgroundColor: '#30353b', color: '#ffb59f' }}>
-                                View Demo
+                                Contact Us
                             </button>
                         </div>
 
@@ -97,7 +98,7 @@ export default function LandingPage({ onStart }) {
                         <div className="max-w-7xl mx-auto">
 
                             <p className="text-center text-[0.7rem] font-bold uppercase tracking-[0.15em] mb-3"
-                               style={{ fontFamily: 'Space Grotesk, sans-serif', color: '#ffb59f' }}>
+                                style={{ fontFamily: 'Space Grotesk, sans-serif', color: '#ffb59f' }}>
                                 Why Typing Bud
                             </p>
 
@@ -110,10 +111,10 @@ export default function LandingPage({ onStart }) {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {FEATURES.map(f => (
                                     <div key={f.title}
-                                         className="p-10 rounded-xl border transition-all duration-200 hover:-translate-y-1 cursor-default"
-                                         style={{ backgroundColor: '#1b2025', borderColor: 'rgba(91,64,57,0.05)' }}
-                                         onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(255,181,159,0.2)'}
-                                         onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(91,64,57,0.05)'}>
+                                        className="p-10 rounded-xl border transition-all duration-200 hover:-translate-y-1 cursor-default"
+                                        style={{ backgroundColor: '#1b2025', borderColor: 'rgba(91,64,57,0.05)' }}
+                                        onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(255,181,159,0.2)'}
+                                        onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(91,64,57,0.05)'}>
                                         <div className="text-3xl mb-6">{f.icon}</div>
                                         <h3 className="font-bold text-xl mb-3"
                                             style={{ fontFamily: 'Space Grotesk, sans-serif', color: '#dee3ea' }}>
@@ -160,6 +161,7 @@ export default function LandingPage({ onStart }) {
                 </main>
 
                 {/* ── Footer ──────────────────────────────────────────── */}
+                <section id='contact'>
                 <footer className="border-t px-8 py-12"
                     style={{ backgroundColor: '#0f1419', borderColor: 'rgba(91,64,57,0.15)' }}>
                     <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-6">
@@ -175,7 +177,7 @@ export default function LandingPage({ onStart }) {
                                     className="text-sm no-underline transition-colors duration-500 hover:text-[#ffb59f]"
                                     style={{ color: 'rgba(222,227,234,0.5)' }}>
                                     {l}
-                                </a>    
+                                </a>
                             ))}
                         </div>
 
@@ -184,6 +186,7 @@ export default function LandingPage({ onStart }) {
                         </span>
                     </div>
                 </footer>
+                </section>
             </div>
         </>
     )
