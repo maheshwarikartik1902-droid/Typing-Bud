@@ -18,7 +18,7 @@ const ApiHandler = async (quoteLength) => {
 
 
 
-    const lengthMap = {
+    const lengthMap = { 
         short: { minLength: 0, maxLength: 50 },
         medium: { minLength: 50, maxLength: 200 },
         long: { minLength: 200, maxLength: 500 },

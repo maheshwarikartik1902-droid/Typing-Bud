@@ -78,7 +78,7 @@ export default function LandingPage({ onStart }) {
                                 Start Typing Now
                             </button>
                             <button onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
-                            className="border-0 cursor-pointer text-sm font-bold uppercase tracking-widest px-10 py-4 rounded-lg transition-colors hover:brightness-110"
+                                className="border-0 cursor-pointer text-sm font-bold uppercase tracking-widest px-10 py-4 rounded-lg transition-colors hover:brightness-110"
                                 style={{ fontFamily: 'Space Grotesk, sans-serif', backgroundColor: '#30353b', color: '#ffb59f' }}>
                                 Contact Us
                             </button>
@@ -162,30 +162,44 @@ export default function LandingPage({ onStart }) {
 
                 {/* ── Footer ──────────────────────────────────────────── */}
                 <section id='contact'>
-                <footer className="border-t px-8 py-12"
-                    style={{ backgroundColor: '#0f1419', borderColor: 'rgba(91,64,57,0.15)' }}>
-                    <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-6">
+                    <footer className="border-t px-8 py-12"
+                        style={{ backgroundColor: '#0f1419', borderColor: 'rgba(91,64,57,0.15)' }}>
+                        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-6">
 
-                        <span className="font-bold text-lg lp-editorial"
-                            style={{ fontFamily: 'Space Grotesk, sans-serif', color: '#dee3ea' }}>
-                            Typing Bud
-                        </span>
+                            <span className="font-bold text-lg lp-editorial"
+                                style={{ fontFamily: 'Space Grotesk, sans-serif', color: '#dee3ea' }}>
+                                Typing Bud
+                            </span>
 
-                        <div className="flex flex-wrap gap-8">
-                            {['Contact us'].map(l => (
-                                <a key={l} href="https://www.linkedin.com/in/kartik-maheshwari-/"
-                                    className="text-sm no-underline transition-colors duration-500 hover:text-[#ffb59f]"
-                                    style={{ color: 'rgba(222,227,234,0.5)' }}>
-                                    {l}
-                                </a>
-                            ))}
+                            <div className="flex flex-wrap gap-8">
+                                {['Contact us'].map(l => (
+                                    <>
+                                        {l}
+                                        <a
+                                            href="https://www.linkedin.com/in/kartik-maheshwari-/"
+                                            target="_blank"
+                                            className="text-[rgba(222,227,234,0.5)] hover:text-[#ffb59f] transition-colors duration-300"
+                                        >
+                                            LinkedIn
+                                        </a>
+
+                                        <a
+                                            href="https://github.com/maheshwarikartik1902-droid"
+                                            target="_blank"
+                                            className="text-[rgba(222,227,234,0.5)] hover:text-[#ffb59f] transition-colors duration-300"
+                                        >
+                                            Github
+                                        </a>
+                                    </>
+
+                                ))}
+                            </div>
+
+                            <span className="text-sm " style={{ color: 'rgba(222,227,234,0.4)' }}>
+                                © 2026 Typing Bud. Engineered for performance.
+                            </span>
                         </div>
-
-                        <span className="text-sm " style={{ color: 'rgba(222,227,234,0.4)' }}>
-                            © 2026 Typing Bud. Engineered for performance.
-                        </span>
-                    </div>
-                </footer>
+                    </footer>
                 </section>
             </div>
         </>
