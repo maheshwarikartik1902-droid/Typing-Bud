@@ -5,18 +5,19 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 
 const app = express();
-app.use(express.json());
-app.use(cookieParser());
-app.use(morgan('dev'));
 app.use(cors({
     origin: [
         'http://localhost:5173',
-        'https://typing-bud.vercel.app/',  // ✅ exact URL, no trailing slash
+        'https://typing-bud.vercel.app',  
     ],
     credentials: true,      // ← required for cookies to work
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
 }));
+app.use(express.json());
+app.use(cookieParser());
+app.use(morgan('dev'));
+
 app.use("/api/auth", authRouter);
 
 app.use((req, res, next) => {
