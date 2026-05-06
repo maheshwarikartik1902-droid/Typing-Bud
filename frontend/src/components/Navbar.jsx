@@ -1,18 +1,28 @@
 import React from 'react'
 import { useTestMode } from '../context/TestModeContext'
 import { useTheme } from '../provider/ThemeProvider';
-
+import { useAuth } from '@/context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { Settings, Timer, CaseSensitive, Quote } from 'lucide-react'
-
+import ThemeSwitcher from './ThemeSwitcher'
 const MODES = [
     { id: 'time', label: 'Time', icon: Timer },
     { id: 'words', label: 'Words', icon: CaseSensitive },
     { id: 'quote', label: 'Quote', icon: Quote },
 ]
 
+
 const Navbar = () => {
+    const { user, isAuthenticated, logout } = useAuth();
+    const navigate = useNavigate();
     const { theme, setTheme } = useTheme();
-    const { mode, setMode, setResetKey, sound, setSound, volume, setVolume, soundType,setSoundType } = useTestMode();
+    const { mode, setMode, setResetKey, sound, setSound, volume, setVolume, soundType, setSoundType } = useTestMode();
+
+
+    const handleLogout = async () => {
+        await logout();
+        navigate('/');
+    };
 
     const handleMode = (m) => {
         setMode(m);
@@ -44,12 +54,37 @@ const Navbar = () => {
             <div className="divider divider-horizontal mx-0" />
 
             {/* Settings */}
-            <button
-                className="btn btn-ghost btn-sm btn-circle"
-                onClick={() => document.getElementById('settings_modal').showModal()}
-            >
-                <Settings size={18} />
-            </button>
+            <div className="flex items-center gap-2">
+
+                <details className="dropdown dropdown-end">
+                    <summary className="btn btn-ghost btn-sm btn-circle"><Settings size={18} /></summary>
+                    <ul className="menu dropdown-content bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
+                        <li>
+                            <button className='justify-center'
+                                onClick={() => document.getElementById('settings_modal').showModal()}
+                            >
+                                Settings
+                            </button>
+                        </li>
+                        <li>
+                            {isAuthenticated ? (
+                                <>
+                                    <span className="text-sm opacity-60 font-mono pb-2">
+                                        Hey {user?.username}
+                                    </span>
+                                    <li>
+                                        Profile
+                                    </li>
+                                    <button onClick={handleLogout} className="btn btn-ghost btn-sm">Logout</button>
+                                </>
+                            ) : (
+                                <button onClick={() => navigate('/register')} className="btn btn-ghost btn-sm">SignUp/Login</button>
+                            )}
+                        </li>
+                    </ul>
+                </details>
+
+            </div>
 
             {/* Settings Modal */}
             <dialog id="settings_modal" className="modal">
@@ -146,6 +181,7 @@ const Navbar = () => {
                     <button>close</button>
                 </form>
             </dialog>
+
         </div>
     )
 }

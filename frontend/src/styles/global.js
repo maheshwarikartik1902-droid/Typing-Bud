@@ -34,11 +34,6 @@ export const GlobalStyles = createGlobalStyle`
     font-family: monospace;
     transition: background-color 0.3s ease, color 0.3s ease;
 
-    /*
-      ✅ FIX: DaisyUI v4 stores CSS variables as FULL values e.g. oklch(98% 0 0).
-         Use var() directly — NOT oklch(var()) which double-wraps and produces
-         invalid CSS like oklch(oklch(98% 0 0)) → transparent/invisible.
-    */
     background-color: var(--color-base-100);
     color: var(--color-base-content);
   }

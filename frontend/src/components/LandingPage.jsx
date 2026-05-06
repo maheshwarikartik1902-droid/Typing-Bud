@@ -1,6 +1,6 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-
+import { useAuth } from '../context/AuthContext'
 // Only things Tailwind can't do: font import, keyframe, gradient, tight tracking
 const minimalStyles = `
     @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=Inter:wght@400;500;600&display=swap');
@@ -23,6 +23,15 @@ const FEATURES = [
 
 export default function LandingPage({ onStart }) {
     const navigate = useNavigate();
+    const { user, isAuthenticated, logout } = useAuth();
+    const handleLogout = async () => {
+        await logout();
+        navigate('/');
+    };
+
+
+
+
     return (
         <>
             <style>{minimalStyles}</style>
@@ -37,15 +46,27 @@ export default function LandingPage({ onStart }) {
                             Typing Bud
                         </span>
                         <div className="flex items-center gap-4">
-                            <button className="bg-transparent border-0 cursor-pointer text-xs font-bold uppercase tracking-widest px-4 py-2 rounded opacity-65 hover:opacity-100 transition-opacity"
-                                style={{ fontFamily: 'Space Grotesk, sans-serif', color: '#dee3ea' }}>
-                                Login
-                            </button>
-                            <button onClick={onStart}
-                                className="lp-thermal border-0 cursor-pointer text-xs font-bold uppercase tracking-widest px-5 py-2 rounded-md hover:scale-95 transition-transform"
-                                style={{ fontFamily: 'Space Grotesk, sans-serif', color: '#3a0a00' }}>
-                                Sign Up
-                            </button>
+                            {isAuthenticated ?
+                                <button className="bg-transparent border-0 cursor-pointer text-xs font-bold uppercase tracking-widest px-4 py-2 rounded opacity-65 hover:opacity-100 transition-opacity"
+                                    style={{ fontFamily: 'Space Grotesk, sans-serif', color: '#dee3ea' }}
+                                    onClick={handleLogout}>
+                                    Logout
+                                </button>
+                                :
+                                <>
+                                    <button className="bg-transparent border-0 cursor-pointer text-xs font-bold uppercase tracking-widest px-4 py-2 rounded opacity-65 hover:opacity-100 transition-opacity"
+                                        style={{ fontFamily: 'Space Grotesk, sans-serif', color: '#dee3ea' }}
+                                        onClick={() => navigate('/login')}>
+                                        Login
+                                    </button>
+                                    <button
+                                        className="lp-thermal border-0 cursor-pointer text-xs font-bold uppercase tracking-widest px-5 py-2 rounded-md hover:scale-95 transition-transform"
+                                        style={{ fontFamily: 'Space Grotesk, sans-serif', color: '#3a0a00' }}
+                                        onClick={() => navigate('/register')}>
+                                        Sign Up
+                                    </button>
+                                </>
+                            }
                         </div>
                     </div>
                 </nav>
@@ -53,7 +74,7 @@ export default function LandingPage({ onStart }) {
                 <main className="pt-16">
 
                     {/* ── Hero ────────────────────────────────────────── */}
-                    <section className="max-w-7xl mx-auto px-8 pt-40 pb-24 flex flex-col items-center text-center">
+                    <section className="max-w-7xl mx-auto px-8 pt-15 pb-24 flex flex-col items-center text-center">
 
 
 
@@ -144,7 +165,7 @@ export default function LandingPage({ onStart }) {
                                 Experience the cleanest typing interface ever designed.
                             </p>
 
-                            {/*<button onClick={onStart}
+                            <button onClick={() => navigate('/practice')}
                                 className="lp-thermal border-0 cursor-pointer text-sm font-bold uppercase tracking-widest px-10 py-4 rounded-lg hover:scale-95 transition-transform mb-8"
                                 style={{ fontFamily: 'Space Grotesk, sans-serif', color: '#3a0a00' }}>
                                 Start for Free
@@ -153,9 +174,10 @@ export default function LandingPage({ onStart }) {
                             <br />
 
                             <button className="inline-flex items-center gap-2 bg-transparent border-0 cursor-pointer text-sm font-bold uppercase tracking-widest mt-4 transition-all"
-                                style={{ fontFamily: 'Space Grotesk, sans-serif', color: '#ffb59f' }}>
+                                style={{ fontFamily: 'Space Grotesk, sans-serif', color: '#ffb59f' }}
+                                onClick={() => navigate('/register')}>
                                 Join the Community <span>→</span>
-                            </button>*/}
+                            </button>
                         </div>
                     </section>
                 </main>
