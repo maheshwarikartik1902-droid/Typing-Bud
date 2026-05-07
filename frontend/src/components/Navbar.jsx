@@ -54,33 +54,39 @@ const Navbar = () => {
             <div className="divider divider-horizontal mx-0" />
 
             {/* Settings */}
-            <div className="flex items-center gap-2">
+            <div className="flex justify-center items-center gap-2">
 
                 <details className="dropdown dropdown-end">
                     <summary className="btn btn-ghost btn-sm btn-circle"><Settings size={18} /></summary>
                     <ul className="menu dropdown-content bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
-                        <li>
-                            <button className='justify-center'
-                                onClick={() => document.getElementById('settings_modal').showModal()}
-                            >
-                                Settings
-                            </button>
-                        </li>
-                        <li>
-                            {isAuthenticated ? (
-                                <>
-                                    <span className="text-sm opacity-60 font-mono pb-2">
-                                        Hey {user?.username}
-                                    </span>
-                                    <li>
-                                        Profile
-                                    </li>
+                        {isAuthenticated ? (
+                            <>
+                                <span className="text-sm opacity-60 font-mono pb-2 text-center">
+                                    Hey {user?.username}
+                                </span>
+                                <li>
                                     <button onClick={handleLogout} className="btn btn-ghost btn-sm">Logout</button>
-                                </>
-                            ) : (
+                                </li>
+                                <li>
+                                    <button className='justify-center text-center '
+                                        onClick={() => document.getElementById('settings_modal').showModal()}
+                                    >
+                                        Settings
+                                    </button>
+                                </li>
+                            </>
+                        ) : (
+                            <>
+                                <li>
+                                    <button className='justify-center text-center '
+                                        onClick={() => document.getElementById('settings_modal').showModal()}
+                                    >
+                                        Settings
+                                    </button>
+                                </li>
                                 <button onClick={() => navigate('/register')} className="btn btn-ghost btn-sm">SignUp/Login</button>
-                            )}
-                        </li>
+                            </>
+                        )}
                     </ul>
                 </details>
 
