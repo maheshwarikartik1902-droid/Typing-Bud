@@ -26,7 +26,7 @@ A minimalist, feature-rich typing speed web application built with React.js. Tes
 
 ## 3. Demo
 
-> **Live:** [typingbud.vercel.app](https://typingbud.vercel.app) 
+> **Live:** [typing-bud.vercel.app](https://typing-bud.vercel.app) 
 
 ---
 
