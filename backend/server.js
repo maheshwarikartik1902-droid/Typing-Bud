@@ -1,8 +1,10 @@
-import app from './src/app.js';
-import connectDB from './src/config/database.js';
+import app from "./src/app.js";
+import connectDB from "./src/config/database.js";
 
+const PORT = process.env.PORT || 3000;
 
 connectDB();
-app.listen(3000, () => {
-    console.log("server running on port 3000");
-})
+
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
